@@ -1,180 +1,47 @@
-# Engineering AI Project Template
+# Assignment 3 - Knowledge-Based Agent (Z3)
 
-This is a GitHub template repository for student projects in **Engineering Artificial Intelligence**. Use this template to create a new repository for your assignments and course projects.
+This project implements the Z3-based knowledge-based agent for the Hazardous Warehouse.
 
-## Getting Started
+## Files
 
-### Prerequisites
+- [src/hazardous_warehouse_env.py](src/hazardous_warehouse_env.py): Environment with hazards, percepts, actions, and shutdown device.
+- [src/hazardous_warehouse_viz.py](src/hazardous_warehouse_viz.py): Example layout used for the manual walkthrough.
+- [src/warehouse_kb_agent.py](src/warehouse_kb_agent.py): Z3 KB agent (TELL/ASK, BFS planning, action loop, shutdown bonus).
+- [src/manual_reasoning.py](src/manual_reasoning.py): Step-by-step Z3 reasoning walkthrough (Section 3.2/3.6).
 
-Before using this template, ensure you have completed the one-time setup:
-
-1. Install VS Code from [https://code.visualstudio.com/](https://code.visualstudio.com/)
-2. Install the required VS Code extensions:
-   - Python (Microsoft)
-   - GitHub Copilot (if you have access)
-3. Install `uv` from [https://astral.sh/uv/](https://astral.sh/uv/)
-
-See the course's "Development Environments" guide for detailed setup instructions.
-
-### Creating Your Project Repository
-
-1. Visit this template repository on GitHub
-2. Click "Use this template" → "Create a new repository"
-3. Name your repository (e.g., `eai-assignment-1`)
-4. Choose Public or Private
-5. Click "Create repository from template"
-6. Clone your new repository locally
-
-### Setting Up Your Project
-
-Once you've cloned your repository, run the bootstrap script for your operating system:
-
-**macOS:**
-```bash
-bash scripts/bootstrap-macos.sh
-```
-
-**Windows (PowerShell):**
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\bootstrap-windows.ps1
-```
-
-**Linux / WSL:**
-```bash
-bash scripts/bootstrap-linux.sh
-```
-
-The script will:
-- Install Python 3.13 (if not already installed)
-- Create a virtual environment (`.venv`)
-- Install all dependencies specified in `pyproject.toml`
-- Configure VS Code to use the virtual environment automatically
-
-### Opening Your Project
-
-After running the bootstrap script, open the project in VS Code:
+## How to Run
 
 ```bash
-code .
+uv run python src/manual_reasoning.py
+uv run python src/warehouse_kb_agent.py
 ```
 
-VS Code should automatically detect and use the Python interpreter from `.venv`. If not, see the troubleshooting section of the course guide.
+## Task 3 - Manual Reasoning Results
 
-## Project Structure
+Manual walkthrough reproduces the textbook inference:
 
-```
-your-project/
-├── README.md                 # Project documentation (update this!)
-├── pyproject.toml           # Python project configuration and dependencies
-├── uv.lock                  # Locked dependency versions (auto-generated)
-├── .python-version          # Python version specification
-├── .vscode/
-│   └── settings.json        # VS Code workspace settings
-├── scripts/
-│   ├── bootstrap-macos.sh   # macOS setup script
-│   ├── bootstrap-linux.sh   # Linux/WSL setup script
-│   └── bootstrap-windows.ps1 # Windows setup script
-├── src/                     # Your Python source code
-└── tests/                   # Test files
-```
+- Step 1 (1,1): safe(2,1) = True, safe(1,2) = True
+- Step 2 (2,1): safe(3,1) = False (unknown), safe(2,2) = False (unknown)
+- Step 3 (1,2): safe(2,2) = True, not safe(3,1) = True, not safe(1,3) = True
 
-## Managing Dependencies
+## Task 5 - Agent Run (Example Layout)
 
-### Adding a New Package
-
-Edit `pyproject.toml` and add the package to the `dependencies` list:
-
-```toml
-[project]
-dependencies = [
-  "existing-package",
-  "new-package",  # Add here
-]
-```
-
-Then synchronize your environment:
+Run command:
 
 ```bash
-uv sync
+uv run python src/warehouse_kb_agent.py
 ```
 
-### Removing a Package
+Result:
 
-Remove it from `pyproject.toml` and run:
+- Steps taken: 24
+- Total reward: 968
+- Success: True (package retrieved and exit)
 
-```bash
-uv sync
-```
+## Task 6 - Reflection
 
-### Locking Dependencies
+The agent can get stuck when all remaining unknown squares cannot be proven safe, even if a human might take a reasonable risk to proceed. It also behaves conservatively when the KB cannot entail safety, which can cause it to exit without the package in some layouts. Adding probabilistic reasoning or expected-utility decision making would help it choose actions under uncertainty.
 
-After modifying dependencies, commit both `pyproject.toml` and `uv.lock` to version control:
+## Bonus - Shutdown Device
 
-```bash
-git add pyproject.toml uv.lock
-git commit -m "Update dependencies"
-```
-
-## Resetting Your Environment
-
-If you encounter issues with your Python environment, reset it completely:
-
-**macOS:**
-```bash
-rm -rf .venv
-uv sync
-```
-
-**Windows (PowerShell):**
-```powershell
-Remove-Item -Recurse -Force .venv
-uv sync
-```
-
-Then restart VS Code.
-
-## Running Your Code
-
-### Python Scripts
-
-```bash
-python src/my_script.py
-```
-
-### Verifying PyTorch Installation
-
-After bootstrap setup completes, verify that PyTorch is working correctly:
-
-```bash
-python scripts/test-pytorch.py
-```
-
-This script tests PyTorch functionality, CUDA availability (if applicable), tensor operations, and autograd. All tests should pass with a green checkmark.
-
-### Tests
-
-```bash
-python -m pytest tests/
-```
-
-## Using AI Assistance with Copilot
-
-With GitHub Copilot installed, you can:
-
-- Press `Ctrl+K` (or `Cmd+K` on macOS) to start an inline chat
-- Use suggestions as you type code
-- Ask questions about your code in the Copilot Chat panel
-
-## Course Resources
-
-- **Development Environment Guide:** See the course notebook on "Development Environments"
-- **Python Setup:** Refer to "Setting Up Your Development Environment" section
-- **Course Notebooks:** Access course materials through the main course website
-
-## Questions or Issues?
-
-Refer to the course's development environment troubleshooting guide, or reach out to course staff during office hours.
-
----
-
-**Happy coding! 🚀**
+The agent uses shutdown if the forklift location is entailed and lies on the current line of sight, matching the one-shot device rules.
